@@ -9,7 +9,7 @@ import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ROUTE } from "@/core/config/routes";
+import { ROUTES } from "@/core/config/routes";
 import { blogFormSchema, BlogFormSchema } from "../blog.schema";
 import { useBlogStore } from "../store/blog-store";
 import { getImageFileError, readFileAsDataUrl } from "../utils/blog.utils";
@@ -109,7 +109,7 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
     const values = getValues();
 
     if (!hasFormData(values)) {
-      router.push(ROUTE.BLOGS);
+      router.push(ROUTES.MY_BLOGS);
       return;
     }
 
@@ -117,7 +117,7 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
 
     saveDraft(values, blogId);
 
-    router.push(ROUTE.BLOGS);
+    router.push(ROUTES.MY_BLOGS);
   };
 
   useEffect(() => {
@@ -267,7 +267,7 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
         buttonText="OK"
         onDone={() => {
           setShowSubmittedDialog(false);
-          router.push(ROUTE.BLOGS);
+          router.push(ROUTES.MY_BLOGS);
         }}
       />
 

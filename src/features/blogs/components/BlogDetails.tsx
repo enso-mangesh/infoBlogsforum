@@ -22,9 +22,10 @@ import {
 
 type Props = {
   slug: string;
+  isOwner: boolean;
 };
 
-export default function BlogDetails({ slug }: Props) {
+export default function BlogDetails({ slug, isOwner  }: Props) {
   const blog = useBlogStore((state) =>
     state.blogs.find((b) => b.slug === slug),
   );
@@ -100,6 +101,7 @@ export default function BlogDetails({ slug }: Props) {
       {/* Blog Details Bar */}
       <BlogDetailsBar
         slug={blog.slug}
+        isOwner={isOwner}
         comments={20}
         likes={1100}
         views={2000}

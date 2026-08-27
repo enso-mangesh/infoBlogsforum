@@ -5,6 +5,7 @@ import AuthorInfo from './AuthorInfo';
 import StatusBadge from './StatusBadge';
 import { formatDate } from '../lib/date';
 import { Card, CardContent } from '@/components/ui/card';
+import { ROUTES } from '@/core/config/routes';
 
 type BlogCardProps = {
   blog: Blog;
@@ -25,8 +26,8 @@ export default function BlogCard({ blog }: BlogCardProps) {
   const isDraft = (blog.status as string)?.toLowerCase() === 'draft';
 
   const href = isDraft
-    ? `/blogs/${blog.slug}/edit`
-    : `/blogs/${blog.slug}`;
+  ? ROUTES.EDIT_BLOG(blog.slug)
+  : ROUTES.MY_BLOG_DETAILS(blog.slug);
 
   return (
     <Link href={href} className="block h-full">
@@ -35,7 +36,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
         className="h-full rounded-xl border-gray-200 bg-white hover:shadow-xl"
       >
         {/* Image */}
-        <div className="relative h-64 w-full overflow-hidden">
+        <div className="relative h-50 w-full overflow-hidden">
           <Image
             src={imageSrc}
             alt={blog.title}

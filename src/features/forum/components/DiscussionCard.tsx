@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { slugify } from '../utils/slug';
 import { Discussion } from '../types/forum.types';
+import { ROUTES } from '@/core/config/routes';
 
 type DiscussionCardProps = {
   discussion: Discussion;
@@ -12,7 +13,7 @@ type DiscussionCardProps = {
 const DiscussionCard = ({ discussion }: DiscussionCardProps) => {
   return (
     <Link
-      href={`/forum/${slugify(discussion.title)}`}
+     href={ROUTES.DISCUSSION_DETAIL(slugify(discussion.title))}
       className="block h-full"
     >
       <Card

@@ -10,6 +10,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ROUTES } from '@/core/config/routes';
 
 const PromoBanner = () => {
   return (
@@ -66,7 +67,7 @@ const PromoBanner = () => {
           iconPosition="right"
           className="shrink-0 border-primary bg-white text-primary-dark cursor-pointer"
         >
-          <Link href="/forum/ask">Ask a professional</Link>
+          <Link href={ROUTES.CREATE_DISCUSSION}>Ask a professional</Link>
         </Button>
       </CardContent>
     </Card>

@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 import BlogActions from "./BlogAction";
 import BlogAnalyticsModal from "./BlogAnalyticsModal";
-import { ReportDialog } from "@/components/common/ReportDailog";
 
 interface BlogDetailsBarProps {
   slug: string;
+  isOwner?: boolean;
   comments?: number;
   likes?: number;
   views?: number;
@@ -26,6 +26,7 @@ interface BlogDetailsBarProps {
 
 export default function BlogDetailsBar({
   slug,
+  isOwner,
   comments = 20,
   likes = 1100,
   views = 2000,
@@ -38,7 +39,7 @@ export default function BlogDetailsBar({
   const [bookmarked, setBookmarked] = useState(initiallyBookmarked);
   const [likeCount, setLikeCount] = useState(likes);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
+  // const [reportOpen, setReportOpen] = useState(false);
   const handleLike = () => {
     setLiked((prev) => {
       setLikeCount((count) => (prev ? count - 1 : count + 1));
@@ -91,17 +92,19 @@ export default function BlogDetailsBar({
           </button>
 
           {/* Analytics */}
-          <button
-            type="button"
-            onClick={() => setAnalyticsOpen(true)}
-            className="flex items-center gap-1 text-sm"
-          >
-            <BarChart3 size={23} strokeWidth={1.8} />
+          {isOwner && (
+            <button
+              type="button"
+              onClick={() => setAnalyticsOpen(true)}
+              className="flex items-center gap-1 text-sm"
+            >
+              <BarChart3 size={23} strokeWidth={1.8} />
 
-            <span>
-              {views >= 1000 ? `${(views / 1000).toFixed(0)}k` : views}
-            </span>
-          </button>
+              <span>
+                {views >= 1000 ? `${(views / 1000).toFixed(0)}k` : views}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Right side */}
@@ -123,22 +126,22 @@ export default function BlogDetailsBar({
           <button type="button" onClick={handleShare} aria-label="Share">
             <Share2 size={23} strokeWidth={1.8} />
           </button>
-          <button
+          {/* <button
             type="button"
             onClick={() => setReportOpen(true)}
             aria-label="Report"
           >
             <Flag size={23} strokeWidth={1.8} />
-          </button>
+          </button> */}
           {/* 3 dots - reuse BlogActions */}
-          <BlogActions slug={slug} onDelete={onDelete} />
+          <BlogActions slug={slug} onDelete={onDelete} isOwner={isOwner} />
         </div>
       </div>
       <BlogAnalyticsModal
         open={analyticsOpen}
         onClose={() => setAnalyticsOpen(false)}
       />
-      <ReportDialog
+      {/* <ReportDialog
         open={reportOpen}
         onOpenChange={setReportOpen}
         onReport={(reason, details) => {
@@ -148,7 +151,7 @@ export default function BlogDetailsBar({
             details,
           });
         }}
-      />
+      /> */}
     </>
   );
 }

@@ -10,6 +10,7 @@ import Link from "next/link";
 import SortDropdown from "@/features/blogs/components/SortDropdown";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Input } from "@/components/ui/input";
+import { ROUTES } from "@/core/config/routes";
 
 const Forum = () => {
   const [activeTab, setActiveTab] = useState("All");
@@ -36,16 +37,15 @@ const Forum = () => {
           <h1 className="text-4xl font-semibold">Forum</h1>
 
           <div className="flex items-center gap-3">
-
             <Button variant="primary" size="sm" asChild>
-              <Link href="/forum/ask">Share a case</Link>
+              <Link href={ROUTES.CREATE_DISCUSSION}>Share a case</Link>
             </Button>
 
             <SortDropdown value={sortBy} onChange={setSortBy} />
-
+{/* 
             <button className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200">
               <SlidersHorizontal className="h-6 w-6" />
-            </button>
+            </button> */}
             {/* <ThemeToggle /> */}
           </div>
         </div>
@@ -72,14 +72,14 @@ const Forum = () => {
 
             <SortDropdown value={sortBy} onChange={setSortBy} />
 
-            <button className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200">
+            {/* <button className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200">
               <SlidersHorizontal className="h-6 w-6" />
-            </button>
+            </button> */}
           </div>
 
-          <button className="fixed bottom-4 left-4 right-4 z-50 h-10 rounded-full bg-lime-500 text-center text-md font-semibold text-white shadow-lg">
-            Share a Case
-          </button>
+           <Button variant="primary" size="sm" asChild>
+              <Link href={ROUTES.CREATE_DISCUSSION}>Share a case</Link>
+            </Button>
         </div>
 
         <PromoBanner />
