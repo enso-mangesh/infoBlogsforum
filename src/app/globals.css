@@ -1,26 +1,162 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
+@custom-variant dark (&:where(.dark, .dark &));
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+ 
+  --primary: #85C556;
+  --primary-dark: #2A6B0A;
+  --primary-light: #EDF7E4;
+  --purple: #7008E7;
+  --purple-light: #F9F2FF;
+  --blue: #1447E6;
+  --blue-light: #EEF6FF;
+  --yellow: #F79432;
+  --yellow-light: #FFF8E6;
+  --red: #E00C00;
+  --red-light: #FFEAE9;
+  --brown: #92400E;
+
+  --subtext: #696969;
+  --grey-bg: #F4F4F8;
+  --text-field: #F5F5F5;
+  --dark-grey: #757575;
+  --stroke: #EEEEEE;
+  
+  --disabled: #CDCDCD;
+  --disabled-text: #E3E3E3;
+  --black: #000000;
+  --white: #FFFFFF;
+}
+.dark {
+  --black: #FFFFFF;
+  --white: #000000;
+}
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+
+  
+  --color-purple: var(--purple);
+  --color-purple-light: var(--purple-light);
+
+  --color-blue: var(--blue);
+  --color-blue-light: var(--blue-light);
+
+  --color-yellow: var(--yellow);
+  --color-yellow-light: var(--yellow-light);
+
+  --color-red: var(--red);
+  --color-red-light: var(--red-light);
+
+  --color-brown: var(--brown);
+
+ 
+  --color-subtext: var(--subtext);
+  --color-grey-bg: var(--grey-bg);
+  --color-text-field: var(--text-field);
+  --color-dark-grey: var(--dark-grey);
+  --color-stroke: var(--stroke);
+  
+  --color-disabled: var(--disabled);
+  --color-disabled-text: var(--disabled-text);
+  --color-black: var(--black);
+  --color-white: var(--white);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--stroke);
   }
+  body {
+    background-color: var(--white);
+    color: var(--black);
+  }
+}
+/* @layer components {
+  .calendar-day-card {
+    @apply p-4 rounded-sm border;
+    border-color: var(--border-color);
+    background-color: var(--background);
+  }
+
+  .slot-summary-card {
+    @apply flex items-center gap-3 p-3 rounded-3xl border;
+    border-color: #e2e8f0;
+    background-color: #f8fafc;
+  }
+
+  .slot-empty-state {
+    @apply rounded-3xl border border-dashed p-6 text-center;
+    border-color: #e2e8f0;
+    background-color: #f8fafc;
+  }
+
+  .toggle-switch-thumb {
+    @apply absolute top-1 left-1 w-4 h-4 rounded-full transition-transform;
+    background-color: var(--background);
+  }
+} */
+
+html {
+  text-rendering: geometricPrecision;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: style !important;
+  scroll-behavior: smooth;
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base element defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Tiptap Editor Styles */
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+
+.tiptap li {
+  margin-bottom: 0.25rem;
 }
