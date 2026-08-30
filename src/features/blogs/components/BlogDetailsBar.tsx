@@ -136,7 +136,7 @@ const handleShare = async () => {
             <Flag size={23} strokeWidth={1.8} />
           </button> */}
           {/* 3 dots - reuse BlogActions */}
-          <BlogActions slug={slug} onDelete={onDelete} isOwner={isOwner} />
+          <BlogActions slug={slug} onDelete={onDelete} isOwner={isOwner ?? false} />
         </div>
       </div>
       <BlogAnalyticsModal
