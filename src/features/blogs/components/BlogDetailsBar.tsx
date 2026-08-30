@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import BlogActions from "./BlogAction";
 import BlogAnalyticsModal from "./BlogAnalyticsModal";
+import { toast } from 'sonner';
 
 interface BlogDetailsBarProps {
   slug: string;
@@ -47,16 +48,17 @@ export default function BlogDetailsBar({
     });
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({
-        title: document.title,
-        url: window.location.href,
-      });
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-    }
-  };
+const handleShare = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+
+    toast.success('Link copied to clipboard!');
+  } catch (error) {
+    console.error('Failed to copy blog link:', error);
+
+    toast.error('Failed to copy blog link');
+  }
+};
 
   return (
     <>

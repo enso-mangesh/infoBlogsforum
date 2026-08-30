@@ -2,7 +2,7 @@ import type { Route } from 'next';
 
 export const ROUTES = {
   BLOGS: '/blogs',
-  BLOG_DETAIL: (slug: string) => `/blogs/${slug}`,
+  BLOG_DETAILS: (slug: string) => `/blogs/${slug}`,
   
  
   MY_BLOGS:'/my-blogs',

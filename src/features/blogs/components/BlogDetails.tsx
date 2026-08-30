@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { useBlogStore } from "../store/blog-store";
 import Image from "next/image";
-
 import StatusBadge from "./StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "../lib/date";
-
 import { useBlogCommentsStore } from "../store/blog-comments-store";
 import { CommentSection } from "@/features/comments/CommentSection";
-
 import BlogDetailsBar from "./BlogDetailsBar";
 
 import {
@@ -56,7 +53,7 @@ export default function BlogDetails({ slug, isOwner  }: Props) {
   const imageSrc =
     blog.image ||
     blog.thumbnail ||
-    "/routine-thyroid-screening-women-over-35.png";
+    "/next.svg";
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-10">

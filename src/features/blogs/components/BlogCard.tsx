@@ -9,9 +9,13 @@ import { ROUTES } from '@/core/config/routes';
 
 type BlogCardProps = {
   blog: Blog;
+  isOwner?: boolean;
 };
 
-export default function BlogCard({ blog }: BlogCardProps) {
+export default function BlogCard({
+  blog,
+  isOwner = false,
+}: BlogCardProps) {
   const description =
     blog.description ||
     (typeof blog.content === 'string'
@@ -21,13 +25,18 @@ export default function BlogCard({ blog }: BlogCardProps) {
   const imageSrc =
     blog.image ||
     blog.thumbnail ||
-    '/routine-thyroid-screening-women-over-35.png';
+    '/next.svg';
 
-  const isDraft = (blog.status as string)?.toLowerCase() === 'draft';
+  const isDraft =
+    (blog.status as string)?.toLowerCase() === 'draft';
 
-  const href = isDraft
-  ? ROUTES.EDIT_BLOG(blog.slug)
-  : ROUTES.MY_BLOG_DETAILS(blog.slug);
+  // Owner → My Blogs routes
+  // User → Public Blogs routes
+  const href = isOwner
+    ? isDraft
+      ? ROUTES.EDIT_BLOG(blog.slug)
+      : ROUTES.MY_BLOG_DETAILS(blog.slug)
+    : ROUTES.BLOG_DETAILS(blog.slug);
 
   return (
     <Link href={href} className="block h-full">

@@ -146,7 +146,7 @@ export default function BlogsContent({ isOwner }: BlogsContentProps) {
       <div className="grid w-full md:grid-cols-2 gap-6">
         {filteredAndSortedBlogs.length > 0 ? (
           filteredAndSortedBlogs.map((blog) => (
-            <BlogCard key={blog.id} blog={blog} />
+            <BlogCard key={blog.id} blog={blog} isOwner={isOwner} />
           ))
         ) : (
           <div className="col-span-full py-16 text-center font-medium text-gray-500">
