@@ -143,7 +143,7 @@ export default function BlogsContent({ isOwner }: BlogsContentProps) {
       )}
 
       {/* BLOG CARDS GRID */}
-      <div className="grid w-full md:grid-cols-2 gap-6">
+      <div className="grid w-full max-w-4xl gap-6">
         {filteredAndSortedBlogs.length > 0 ? (
           filteredAndSortedBlogs.map((blog) => (
             <BlogCard key={blog.id} blog={blog} isOwner={isOwner} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,12 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ROUTES } from "@/core/config/routes";
 import { blogFormSchema, BlogFormSchema } from "../blog.schema";
-import { useBlogStore } from "../store/blog-store";
 import { getImageFileError, readFileAsDataUrl } from "../utils/blog.utils";
 import { BlogEditor } from "./BlogEditor";
 import { ThumbnailCropperDialog } from "./ThumbnailCropperDialog";
 import { Blog } from "../blog.type";
-import { SuccessDialog } from '@/components/common/SuccessDailog';
+import { SuccessDialog } from "@/components/common/SuccessDailog";
+import { createBlog, updateBlog, submitBlog } from "../services/blog-action";
 
 interface CreateBlogFormProps {
   blog?: Blog;
@@ -29,10 +29,18 @@ const hasFormData = (values: BlogFormSchema) => {
     values.thumbnail,
   );
 };
+const generateSlug = (title: string) => {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+};
 
 export function CreateBlogForm({ blog }: CreateBlogFormProps) {
   const router = useRouter();
-  const submitForApproval = useBlogStore((state) => state.submitForApproval);
+
   const existingBlog = blog;
   const [showSubmittedDialog, setShowSubmittedDialog] = useState(false);
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
@@ -92,20 +100,67 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
     pendingThumbnailChange.current = null;
   };
 
-  const saveDraft = useBlogStore((state) => state.saveDraft);
   const submittedRef = useRef(false);
 
   const blogId = existingBlog?.id;
 
-  const onSubmit = (values: BlogFormSchema) => {
-    submittedRef.current = true;
+ const onSubmit = async (values: BlogFormSchema) => {
+  submittedRef.current = true;
 
-    submitForApproval(values, blogId);
+  const slug = generateSlug(values.title);
+
+  console.log("BLOG FORM VALUES:", values);
+  console.log("BLOG SLUG:", slug);
+
+  try {
+    let result;
+
+    if (blogId) {
+      result = await updateBlog(String(blogId), {
+        title: values.title,
+        content: values.content,
+        thumbnail: values.thumbnail ?? undefined,
+      });
+
+      if (!result.success) {
+        console.error("Failed to update blog:", result.error);
+        return;
+      }
+
+      const submitResult = await submitBlog(String(blogId));
+
+      if (!submitResult.success) {
+        console.error(
+          "Failed to submit blog:",
+          submitResult.error,
+        );
+        return;
+      }
+    } else {
+      result = await createBlog({
+        title: values.title,
+        slug,
+        content: values.content,
+        status: "DRAFT",
+      });
+
+      if (!result.success) {
+        console.error(
+          "Failed to create blog:",
+          result.error,
+        );
+        return;
+      }
+
+      console.log("Blog created:", result);
+    }
 
     setShowSubmittedDialog(true);
-  };
-
-  const handleSaveDraft = () => {
+  } catch (error) {
+    console.error("Blog submission failed:", error);
+  }
+};
+  const handleSaveDraft = async () => {
     const values = getValues();
 
     if (!hasFormData(values)) {
@@ -115,34 +170,52 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
 
     submittedRef.current = true;
 
-    saveDraft(values, blogId);
+    const slug = generateSlug(values.title);
 
-    router.push(ROUTES.MY_BLOGS);
+    try {
+      let result;
+
+      if (blogId) {
+        // Existing blog
+        result = await updateBlog(String(blogId), {
+          title: values.title,
+          content: values.content,
+          thumbnail: values.thumbnail ?? undefined,
+        });
+      } else {
+        // New blog
+        result = await createBlog({
+          title: values.title,
+          slug,
+          content: values.content,
+          status: "DRAFT",
+          thumbnail: values.thumbnail ?? undefined,
+        });
+      }
+
+      if (!result.success) {
+        console.error("Failed to save draft:", result.error);
+        return;
+      }
+
+      console.log("Draft saved:", result);
+
+      router.push(ROUTES.MY_BLOGS);
+    } catch (error) {
+      console.error("Save draft failed:", error);
+    }
   };
 
-  useEffect(() => {
-    return () => {
-      if (submittedRef.current) return;
-
-      const values = getValues();
-
-      if (!hasFormData(values)) return;
-
-      saveDraft(values, blogId);
-    };
-  }, [blogId, getValues, saveDraft]);
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="mx-auto space-y-5">
         <Input
-          
           placeholder="e.g. Managing Thyroid Disorders"
           error={errors.title?.message}
           {...register("title")}
         />
 
         <Input
-         
           placeholder="Comma-separated, e.g. thyroid, hormones"
           {...register("keywords")}
         />
@@ -172,7 +245,9 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
               ) : (
                 <label className="flex h-48 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-muted-foreground hover:bg-muted/40 transition-colors">
                   <ImagePlus size={20} />
-                  <span className="text-sm text-gray-500">Add blog thumbnail</span>
+                  <span className="text-sm text-gray-500">
+                    Add blog thumbnail
+                  </span>
                   <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif"
@@ -198,7 +273,6 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
               <BlogEditor
                 value={field.value}
                 onChange={(content) => field.onChange(content.html)}
-                
               />
             )}
           />

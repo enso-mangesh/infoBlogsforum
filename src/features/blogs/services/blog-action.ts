@@ -76,6 +76,8 @@ export async function createBlog(
   payload: CreateBlogPayload,
 ) {
   try {
+    console.log("CREATE BLOG PAYLOAD:", payload);
+
     const response =
       await httpServer.post<
         GenericApiResponse<Blog>
@@ -84,19 +86,38 @@ export async function createBlog(
         payload,
       );
 
+    console.log("CREATE BLOG RESPONSE:", response.data);
+
     return {
       success: true,
       ...unwrapApiResponse(response),
     };
-  } catch (error) {
+  } catch (error: any) {
+    console.error("createBlog failed:", error);
+
     console.error(
-      'createBlog failed:',
-      error,
+      "API response:",
+      error?.response?.data,
+    );
+
+    console.error(
+      "API status:",
+      error?.response?.status,
+    );
+
+    console.error(
+      "API URL:",
+      error?.config?.baseURL,
+      error?.config?.url,
     );
 
     return {
       success: false,
-      error: 'Failed to create blog',
+      error:
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to create blog",
     };
   }
 }

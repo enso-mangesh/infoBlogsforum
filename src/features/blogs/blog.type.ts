@@ -40,6 +40,8 @@ export interface Blog {
   image?: string;
   content: BlogContentType;
   rejectionReason?: string | null;
+  comments?: number;
+  views?: number;
 }
 
 export interface BlogFormValues {
@@ -56,20 +58,34 @@ export interface StatCardProps {
   value: string;
   change: string;
 }
+// export interface CreateBlogPayload {
+//   title: string;
+//   category: string;
+//   specialization?: string;
+//   description?: string;
+//   content: string;
+//   thumbnail?: string;
+// }
 export interface CreateBlogPayload {
   title: string;
-  category: string;
-  specialization?: string;
-  description?: string;
+  slug: string;
   content: string;
+  status: "DRAFT" | "PUBLISHED";
+  thumbnail?: string;
+}
+export interface UpdateBlogPayload {
+  title?: string;
+  slug?: string;
+  content?: string;
+  status?: "DRAFT" | "PUBLISHED";
   thumbnail?: string;
 }
 
-export interface UpdateBlogPayload {
-  title?: string;
-  category?: string;
-  specialization?: string;
-  description?: string;
-  content?: string;
-  thumbnail?: string;
-}
+// export interface UpdateBlogPayload {
+//   title?: string;
+//   category?: string;
+//   specialization?: string;
+//   description?: string;
+//   content?: string;
+//   thumbnail?: string;
+// }

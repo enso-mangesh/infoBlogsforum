@@ -14,112 +14,80 @@ export default function BlogStats({
 }: BlogStatsProps) {
   const blogs = useBlogStore((state) => state.blogs);
 
+  const draftCount = blogs.filter(
+    (blog) =>
+      blog.status === 'Draft' ||
+      (blog.status as string)?.toLowerCase() === 'draft',
+  ).length;
+
+  const pendingCount = blogs.filter(
+    (blog) =>
+      blog.status === 'Pending' ||
+      (blog.status as string)?.toLowerCase() === 'pending',
+  ).length;
+
+  const publishedCount = blogs.filter(
+    (blog) =>
+      blog.status === 'Published' ||
+      (blog.status as string)?.toLowerCase() === 'published',
+  ).length;
+
   const blogStats = [
+    {
+      title: 'All',
+      statusValue: null,
+      count: blogs.length,
+    },
     {
       title: 'Drafts',
       statusValue: 'Draft',
-      count: blogs.filter(
-        (blog) =>
-          blog.status === 'Draft' ||
-          (blog.status as string) === 'draft',
-      ).length,
-      bg: 'bg-blue-light hover:bg-blue-50',
-      text: 'text-blue',
-      color: 'var(--blue)',
+      count: draftCount,
     },
     {
       title: 'Pending',
       statusValue: 'Pending',
-      count: blogs.filter(
-        (blog) =>
-          blog.status === 'Pending' ||
-          (blog.status as string) === 'pending',
-      ).length,
-      bg: 'bg-yellow-light hover:bg-yellow-50',
-      text: 'text-yellow',
-      color: 'var(--yellow)',
+      count: pendingCount,
     },
     {
       title: 'Published',
       statusValue: 'Published',
-      count: blogs.filter(
-        (blog) =>
-          blog.status === 'Published' ||
-          (blog.status as string) === 'published',
-      ).length,
-      bg: 'bg-primary-light hover:bg-primary-50',
-      text: 'text-primary-dark',
-      color: 'var(--primary)',
-    },
-    {
-      title: 'Total',
-      statusValue: null,
-      count: blogs.length,
-      bg: 'bg-purple-light hover:bg-purple-50',
-      text: 'text-purple',
-      color: 'var(--purple)',
+      count: publishedCount,
     },
   ];
-return (
-  <div className="flex items-start justify-start gap-4">
-    {blogStats.map((stat) => {
-      const isSelected =
-        selectedStatus === stat.statusValue ||
-        (selectedStatus === null && stat.statusValue === null);
 
-      return (
-        <Card
-          key={stat.title}
-          interactive
-          color={stat.color}
-          className={`
-            min-h-15
-            w-30
-            rounded-2xl
-            border-0
-            md:min-h-20
-            md:w-30
-            md:rounded-2xl
-            ${stat.bg}
-          `}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              if (!onSelectStatus) return;
+  return (
+    <Card className="w-fit rounded-2xl border-0 bg-gray-100 p-1 shadow-none">
+      <div className="flex items-center gap-1">
+        {blogStats.map((stat) => {
+          const isSelected =
+            selectedStatus === stat.statusValue;
 
-              if (selectedStatus === stat.statusValue) {
-                onSelectStatus(null);
-              } else {
-                onSelectStatus(stat.statusValue);
-              }
-            }}
-            className="
-              flex
-              h-full
-              w-full
-              flex-col
-              items-center
-              justify-center
-              p-2
-              text-center
-              md:p-4
-            "
-          >
-            <h2
-              className={`text-xl font-bold md:text-3xl ${stat.text}`}
+          return (
+            <button
+              key={stat.title}
+              type="button"
+              onClick={() => {
+                if (!onSelectStatus) return;
+
+                if (selectedStatus === stat.statusValue) {
+                  onSelectStatus(null);
+                } else {
+                  onSelectStatus(stat.statusValue);
+                }
+              }}
+              className={`rounded-xl px-4 py-2 text-base font-medium transition-colors md:px-5 md:py-2.5
+                ${
+                  isSelected
+                    ? 'bg-primary text-white'
+                    : 'bg-transparent text-gray-600 hover:bg-white'
+                }
+              `}
             >
-              {stat.count}
-            </h2>
-
-            <p
-              className={`mt-1 text-sm font-medium md:text-base ${stat.text}`}
-            >
-              {stat.title}
-            </p>
-          </button>
-        </Card>
-      );
-    })}
-  </div>
-);}
+              {stat.title} ({stat.count})
+            </button>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
