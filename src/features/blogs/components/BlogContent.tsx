@@ -1,11 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import BlogStats from "./BlogStats";
 import BlogCard from "./BlogCard";
 import SortDropdown from "./SortDropdown";
 import { useBlogStore } from "../store/blog-store";
-import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/core/config/routes";
@@ -17,18 +16,20 @@ type BlogsContentProps = {
 
 export default function BlogsContent({ isOwner }: BlogsContentProps) {
   const blogs = useBlogStore((state) => state.blogs);
-
+  const fetchBlogs = useBlogStore((state) => state.fetchBlogs);
   const [sortBy, setSortBy] = useState("new-old");
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-
+  useEffect(() => {
+    fetchBlogs(isOwner);
+  }, [fetchBlogs, isOwner]);
   const filteredAndSortedBlogs = useMemo(() => {
     const filtered = blogs.filter((blog) => {
       const query = search.toLowerCase();
 
       const matchesSearch =
         blog.title.toLowerCase().includes(query) ||
-        blog.category.toLowerCase().includes(query) ||
+        blog.category?.toLowerCase().includes(query) ||
         blog.description?.toLowerCase().includes(query) ||
         blog.keywords?.some((keyword) => keyword.toLowerCase().includes(query));
 
@@ -64,35 +65,34 @@ export default function BlogsContent({ isOwner }: BlogsContentProps) {
       {/* HEADER SECTION */}
       <div>
         {/* Desktop Header */}
-        <div className="hidden w-full items-center justify-between gap-4 md:flex">
-          <h1 className="shrink-0 text-4xl font-semibold">
+        <div className="hidden w-full md:flex flex-col gap-5">
+          {/* Heading */}
+          <h1 className="text-4xl font-semibold">
             {isOwner ? "My Blogs" : "Blogs"}
           </h1>
 
-          <div className="flex items-center gap-3">
+          {/* Search + Button + Sort */}
+          <div className="flex w-full items-center gap-3">
+            {/* Search takes remaining width */}
             <SearchInput
               value={search}
               onChange={setSearch}
               placeholder="Search blogs..."
-              containerClassName="w-80 shrink-0"
-              className="h-12 rounded-xl border-gray-200"
+              containerClassName="flex-1"
+              className="h-12 w-full rounded-xl border-gray-200"
             />
+
+            {/* Button stays fixed */}
             {isOwner && (
-              <Button variant="primary" size="sm" asChild>
+              <Button variant="primary" size="sm" asChild className="shrink-0">
                 <Link href={ROUTES.CREATE_BLOG}>Write New Blog</Link>
               </Button>
             )}
 
-            <SortDropdown value={sortBy} onChange={setSortBy} />
-
-            {/* <button
-              type="button"
-              className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-            >
-              <SlidersHorizontal className="h-5 w-5" />
-            </button> */}
-
-            {/* <ThemeToggle /> */}
+            {/* Sort stays fixed */}
+            <div className="shrink-0">
+              <SortDropdown value={sortBy} onChange={setSortBy} />
+            </div>
           </div>
         </div>
 

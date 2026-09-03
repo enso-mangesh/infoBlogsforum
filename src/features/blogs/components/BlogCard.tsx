@@ -18,7 +18,7 @@ export default function BlogCard({ blog, isOwner = false }: BlogCardProps) {
     blog.description ||
     (typeof blog.content === "string"
       ? blog.content.replace(/<[^>]*>/g, "").slice(0, 140)
-      : blog.content.summary);
+      : "");
 
   const imageSrc = blog.image || blog.thumbnail || "/next.svg";
 
@@ -44,7 +44,7 @@ export default function BlogCard({ blog, isOwner = false }: BlogCardProps) {
             {/* Author + Date */}
             <div className="mb-4 flex items-center justify-between">
               <AuthorInfo
-                author={blog.author}
+                author={blog.authorName}
                 specialization={blog.specialization}
               />
 
@@ -67,6 +67,7 @@ export default function BlogCard({ blog, isOwner = false }: BlogCardProps) {
 
             <div className="mt-auto pt-4 justify-between">
               <BlogDetailsBarLeft
+              blogId={String(blog.id)}
                 comments={blog.comments}
                 likes={blog.likes}
                 views={blog.views}

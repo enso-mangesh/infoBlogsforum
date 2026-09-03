@@ -1,10 +1,10 @@
 import { LucideIcon } from "lucide-react";
 
 export enum BlogStatus {
-  PENDING = 'pending',
-  PUBLISHED = 'published',
-  REJECTED = 'rejected',
-  DRAFT = 'draft',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  PUBLISHED = 'PUBLISHED',
+  REJECTED = 'REJECTED',
+  DRAFT = 'DRAFT',
 }
 
 export interface BlogAuthor {
@@ -23,25 +23,36 @@ export type BlogContentDetails = {
 export type BlogContentType = string | BlogContentDetails;
 
 export interface Blog {
-  id: string | number;
+  id: string;
+  userId: string;
   title: string;
   slug: string;
-  status: "Pending" | "Draft" | "Published" | BlogStatus | string;
-  category: string;
-  specialization?: string;
-  description?: string;
-  keywords?: string[];
-  thumbnail?: string | null;
-  author: string | BlogAuthor;
+  content: string;
+  thumbnailMediaId: string | null;
+  thumbnailUrl: string | null;
+  keywords: string[] | null;
+  tags: string[] | null;
+  links: string[] | null;
+  status: BlogStatus;
+  readingTime: number;
+  likeCount: number;
+  commentCount: number;
+  analyticsCount: number;
+  isActive: boolean;
   createdAt: string;
-  updatedAt?: string;
-  readTime: number;
+  updatedAt: string;
+  authorName: string;
+  authorProfession: string | null;
+  rejectionReason: string | null;
+  category?: string;
+  description?: string;
   likes?: number;
-  image?: string;
-  content: BlogContentType;
-  rejectionReason?: string | null;
-  comments?: number;
   views?: number;
+  comments?: number;
+  image?: string;
+  thumbnail?: string;
+  author?: any;
+  specialization?: string;
 }
 
 export interface BlogFormValues {
@@ -58,27 +69,42 @@ export interface StatCardProps {
   value: string;
   change: string;
 }
-// export interface CreateBlogPayload {
-//   title: string;
-//   category: string;
-//   specialization?: string;
-//   description?: string;
-//   content: string;
-//   thumbnail?: string;
-// }
 export interface CreateBlogPayload {
   title: string;
   slug: string;
   content: string;
-  status: "DRAFT" | "PUBLISHED";
+  status: BlogStatus;
   thumbnail?: string;
 }
 export interface UpdateBlogPayload {
   title?: string;
   slug?: string;
   content?: string;
-  status?: "DRAFT" | "PUBLISHED";
+  status?: BlogStatus;
   thumbnail?: string;
+}
+
+export interface BlogApiResponse {
+  id: string;
+  userId: string;
+  title: string;
+  slug: string;
+  content: string;
+  thumbnailMediaId: string | null;
+  thumbnailUrl: string | null;
+  tags: string[] | null;
+  links: string[] | null;
+  mediaUrls: string[] | null;
+  status: BlogStatus;
+  readingTime: number;
+  likeCount: number;
+  commentCount: number;
+  analyticsCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  authorName: string;
+  authorProfession: string | null;
 }
 
 // export interface UpdateBlogPayload {

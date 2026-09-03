@@ -6,15 +6,15 @@ type StatusBadgeProps = {
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
   const styles = {
-    Published: {
+    PUBLISHED: {
       icon: CircleCheck,
       className: "bg-green-100 text-green-700",
     },
-    Draft: {
+    DRAFT: {
       icon: FileText,
       className: "bg-blue-100 text-blue-700",
     },
-    Pending: {
+    PENDING_REVIEW: {
       icon: Clock3,
       className: "bg-yellow-100 text-yellow-700",
     },

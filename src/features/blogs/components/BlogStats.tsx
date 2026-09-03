@@ -2,6 +2,7 @@
 
 import { useBlogStore } from '../store/blog-store';
 import { Card } from '@/components/ui/card';
+import { BlogStatus } from '../blog.type';
 
 type BlogStatsProps = {
   selectedStatus?: string | null;
@@ -15,21 +16,15 @@ export default function BlogStats({
   const blogs = useBlogStore((state) => state.blogs);
 
   const draftCount = blogs.filter(
-    (blog) =>
-      blog.status === 'Draft' ||
-      (blog.status as string)?.toLowerCase() === 'draft',
+    (blog) => blog.status === BlogStatus.DRAFT,
   ).length;
 
   const pendingCount = blogs.filter(
-    (blog) =>
-      blog.status === 'Pending' ||
-      (blog.status as string)?.toLowerCase() === 'pending',
+    (blog) => blog.status === BlogStatus.PENDING_REVIEW,
   ).length;
 
   const publishedCount = blogs.filter(
-    (blog) =>
-      blog.status === 'Published' ||
-      (blog.status as string)?.toLowerCase() === 'published',
+    (blog) => blog.status === BlogStatus.PUBLISHED,
   ).length;
 
   const blogStats = [
@@ -40,17 +35,17 @@ export default function BlogStats({
     },
     {
       title: 'Drafts',
-      statusValue: 'Draft',
+      statusValue: BlogStatus.DRAFT,
       count: draftCount,
     },
     {
-      title: 'Pending',
-      statusValue: 'Pending',
+      title: 'Pending Review',
+      statusValue: BlogStatus.PENDING_REVIEW,
       count: pendingCount,
     },
     {
       title: 'Published',
-      statusValue: 'Published',
+      statusValue: BlogStatus.PUBLISHED,
       count: publishedCount,
     },
   ];
@@ -75,13 +70,11 @@ export default function BlogStats({
                   onSelectStatus(stat.statusValue);
                 }
               }}
-              className={`rounded-xl px-4 py-2 text-base font-medium transition-colors md:px-5 md:py-2.5
-                ${
-                  isSelected
-                    ? 'bg-primary text-white'
-                    : 'bg-transparent text-gray-600 hover:bg-white'
-                }
-              `}
+              className={`rounded-xl px-4 py-2 text-base font-medium transition-colors md:px-5 md:py-2.5 ${
+                isSelected
+                  ? 'bg-primary text-white'
+                  : 'bg-transparent text-gray-600 hover:bg-white'
+              }`}
             >
               {stat.title} ({stat.count})
             </button>

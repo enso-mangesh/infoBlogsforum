@@ -55,7 +55,9 @@ export default function BlogActions({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          align="end"
+          side="right"
+          align="start"
+          sideOffset={8}
           className="z-100 w-20 rounded-xl bg-white p-2"
         >
           {isOwner ? (

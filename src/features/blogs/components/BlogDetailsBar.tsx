@@ -5,6 +5,7 @@ import BlogDetailsBarLeft from "./BlogDetailsBarLeft";
 import BlogDetailsBarRight from "./BlogDetailsBarRight";
 
 interface BlogDetailsBarProps {
+  blogId: string;
   slug: string;
   isOwner?: boolean;
   comments?: number;
@@ -17,11 +18,12 @@ interface BlogDetailsBarProps {
 }
 
 export default function BlogDetailsBar({
+  blogId,
   slug,
   isOwner,
-  comments = 20,
-  likes = 1100,
-  views = 2000,
+  comments,
+  likes,
+  views,
   initiallyLiked = false,
   initiallyBookmarked = false,
   onCommentsClick,
@@ -31,6 +33,7 @@ export default function BlogDetailsBar({
     <div className="flex items-center justify-between border-y border-y-gray-300 py-2 my-4">
       {/* Left side */}
       <BlogDetailsBarLeft
+        blogId={blogId}
         comments={comments}
         likes={likes}
         views={views}

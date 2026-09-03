@@ -2,10 +2,16 @@ export const API_ENDPOINTS = {
 BLOGS: {
   LIST: '/blogs',
 
-  DETAIL: (slug: string) =>
-    `/blogs/${slug}`,
-
   CREATE: '/blogs',
+
+  DETAIL: (id: string) =>
+    `/blogs/${id}`,
+    
+  LIKE: (id: string) =>
+    `/blogs/${id}/likes`,
+
+  UNLIKE: (id: string) =>
+    `/blogs/${id}/likes`,
 
   UPDATE: (id: string) =>
     `/blogs/${id}`,
@@ -13,11 +19,6 @@ BLOGS: {
   DELETE: (id: string) =>
     `/blogs/${id}`,
 
-  SUBMIT: (id: string) =>
-    `/blogs/${id}/submit`,
-
-  LIKE: (id: string) =>
-    `/blogs/${id}/like`,
 },
 
   FORUM: {

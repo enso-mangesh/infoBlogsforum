@@ -1,15 +1,11 @@
-
 "use client";
 
-import { useState } from "react";
-import {
-  MessageCircle,
-  Heart,
-  BarChart3,
-} from "lucide-react";
-import BlogAnalyticsModal from "./BlogAnalyticsModal";
+import { useState, useTransition } from "react";
+import { Heart, MessageCircle, BarChart3 } from "lucide-react";
+import { likeBlog, unlikeBlog } from "../services/blog-action";
 
 interface BlogDetailsBarLeftProps {
+  blogId: string;
   comments?: number;
   likes?: number;
   views?: number;
@@ -19,78 +15,78 @@ interface BlogDetailsBarLeftProps {
 }
 
 export default function BlogDetailsBarLeft({
-  comments = 20,
-  likes = 1100,
-  views = 2000,
+  blogId,
+  comments = 0,
+  likes = 0,
+  views = 0,
   initiallyLiked = false,
-  isOwner,
   onCommentsClick,
 }: BlogDetailsBarLeftProps) {
   const [liked, setLiked] = useState(initiallyLiked);
   const [likeCount, setLikeCount] = useState(likes);
-  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const handleLike = () => {
-    setLiked((prev) => {
-      setLikeCount((count) => (prev ? count - 1 : count + 1));
-      return !prev;
+    if (isPending) return;
+
+    const nextLiked = !liked;
+
+    // Optimistic UI
+    setLiked(nextLiked);
+    setLikeCount((count) => (nextLiked ? count + 1 : count - 1));
+
+    startTransition(async () => {
+      const result = nextLiked
+        ? await likeBlog(blogId)
+        : await unlikeBlog(blogId);
+
+      console.log("LIKE ACTION RESULT:", result);
+
+      if (!result.success) {
+        // Rollback if API fails
+        setLiked(liked);
+        setLikeCount(likes);
+
+        console.error("Like API failed:", result.error);
+      }
     });
   };
 
   return (
-    <>
-      <div className="flex items-center gap-6">
-        {/* Comments */}
-        <button
-          type="button"
-          onClick={onCommentsClick}
-          className="flex items-center gap-1 text-sm"
-        >
-          <MessageCircle size={23} strokeWidth={1.8} />
-          <span>{comments}</span>
-        </button>
+    <div className="flex items-center gap-6">
+      {/* Comments */}
+      <button
+        type="button"
+        onClick={onCommentsClick}
+        className="flex items-center gap-2"
+      >
+        <MessageCircle className="h-6 w-6" />
+        <span>{comments}</span>
+      </button>
 
-        {/* Likes */}
-        <button
-          type="button"
-          onClick={handleLike}
-          className="flex items-center gap-1 text-sm"
-        >
-          <Heart
-            size={23}
-            strokeWidth={1.8}
-            className={liked ? "fill-red-500 text-red-500" : ""}
-          />
+      {/* Like */}
+      <button
+        type="button"
+        onClick={handleLike}
+        disabled={isPending}
+        className="flex items-center gap-2"
+      >
+        <Heart
+          className={`h-6 w-6 transition ${
+            liked
+              ? "fill-red-500 text-red-500"
+              : "text-black"
+          }`}
+        />
 
-          <span>
-            {likeCount >= 1000
-              ? `${(likeCount / 1000).toFixed(1)}k`
-              : likeCount}
-          </span>
-        </button>
+        <span>{likeCount}</span>
+      </button>
 
-        {/* Analytics */}
-        {isOwner && (
-          <button
-            type="button"
-            onClick={() => setAnalyticsOpen(true)}
-            className="flex items-center gap-1 text-sm"
-          >
-            <BarChart3 size={23} strokeWidth={1.8} />
-
-            <span>
-              {views >= 1000
-                ? `${(views / 1000).toFixed(0)}k`
-                : views}
-            </span>
-          </button>
-        )}
+      {/* Views */}
+      <div className="flex items-center gap-2">
+        <BarChart3 className="h-6 w-6" />
+        <span>{views}</span>
       </div>
-
-      <BlogAnalyticsModal
-        open={analyticsOpen}
-        onClose={() => setAnalyticsOpen(false)}
-      />
-    </>
+    </div>
   );
 }

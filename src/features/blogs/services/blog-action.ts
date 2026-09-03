@@ -2,75 +2,13 @@
 
 import { httpServer } from '@/core/api/http-server';
 import { API_ENDPOINTS } from '@/core/config/api-endpoints';
-
 import { GenericApiResponse} from '@/utils/types';
-
 import { Blog, CreateBlogPayload, UpdateBlogPayload } from '../blog.type';
 import { unwrapApiResponse } from '@/utils/helper';
 
-
-
-export async function getBlogs(
-  page = 1,
-  limit = 10,
-) {
-  try {
-    const response =
-      await httpServer.get<
-        GenericApiResponse<Blog[]>
-      >(
-        API_ENDPOINTS.BLOGS.LIST,
-        {
-          params: {
-            page,
-            limit,
-          },
-        },
-      );
-
-    return {
-      success: true,
-      ...unwrapApiResponse(response),
-    };
-  } catch (error) {
-    console.error(
-      'getBlogs failed:',
-      error,
-    );
-
-    return {
-      success: false,
-      error: 'Failed to fetch blogs',
-    };
-  }
-}
-
-export async function getBlogBySlug(
-  slug: string,
-) {
-  try {
-    const response =
-      await httpServer.get<
-        GenericApiResponse<Blog>
-      >(
-        API_ENDPOINTS.BLOGS.DETAIL(slug),
-      );
-
-    return {
-      success: true,
-      ...unwrapApiResponse(response),
-    };
-  } catch (error) {
-    console.error(
-      'getBlogBySlug failed:',
-      error,
-    );
-
-    return {
-      success: false,
-      error: 'Blog not found',
-    };
-  }
+interface BlogLikeData {
+  blogId: string;
+  liked: boolean;
 }
 export async function createBlog(
   payload: CreateBlogPayload,
@@ -79,9 +17,7 @@ export async function createBlog(
     console.log("CREATE BLOG PAYLOAD:", payload);
 
     const response =
-      await httpServer.post<
-        GenericApiResponse<Blog>
-      >(
+      await httpServer.post<GenericApiResponse<Blog>>(
         API_ENDPOINTS.BLOGS.CREATE,
         payload,
       );
@@ -93,23 +29,17 @@ export async function createBlog(
       ...unwrapApiResponse(response),
     };
   } catch (error: any) {
-    console.error("createBlog failed:", error);
+    console.error("========== CREATE BLOG ERROR ==========");
 
-    console.error(
-      "API response:",
-      error?.response?.data,
-    );
+    console.error("message:", error?.message);
+    console.error("code:", error?.code);
+    console.error("baseURL:", error?.config?.baseURL);
+    console.error("url:", error?.config?.url);
+    console.error("method:", error?.config?.method);
+    console.error("response:", error?.response?.data);
+    console.error("status:", error?.response?.status);
 
-    console.error(
-      "API status:",
-      error?.response?.status,
-    );
-
-    console.error(
-      "API URL:",
-      error?.config?.baseURL,
-      error?.config?.url,
-    );
+    console.error("=======================================");
 
     return {
       success: false,
@@ -118,6 +48,88 @@ export async function createBlog(
         error?.response?.data?.error ||
         error?.message ||
         "Failed to create blog",
+    };
+  }
+}
+
+export async function getBlogs() {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blogs?limit=20`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+
+    throw new Error(
+      errorText || `Failed to fetch blogs (${response.status})`,
+    );
+  }
+
+  return response.json();
+}
+
+export async function getMyBlogs() {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blogs/my?limit=20`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${process.env.API_TOKEN}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+
+    throw new Error(
+      errorText || `Failed to fetch my blogs (${response.status})`,
+    );
+  }
+
+  return response.json();
+}
+
+export async function getBlogById(id: string) {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/blogs/${id}`,
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${process.env.API_TOKEN}`,
+        },
+        cache: "no-store",
+      },
+    );
+
+    const data = await response.json();
+
+    console.log("========== GET BLOG BY ID ==========");
+    console.log("ID:", id);
+    console.log("STATUS:", response.status);
+    console.log("RESPONSE:", data);
+    console.log("====================================");
+
+    if (!response.ok || !data.success) {
+      return {
+        success: false,
+        error: data?.message || "Blog not found",
+      };
+    }
+
+    return {
+      success: true,
+      data: data.data,
+    };
+  } catch (error: any) {
+    console.error("getBlogById failed:", error);
+
+    return {
+      success: false,
+      error: error?.message || "Blog not found",
     };
   }
 }
@@ -180,30 +192,69 @@ export async function deleteBlog(
   }
 }
 
-export async function submitBlog(
-  id: string,
-) {
+export async function likeBlog(blogId: string) {
   try {
-    const response =
-      await httpServer.post<
-        GenericApiResponse<Blog>
-      >(
-        API_ENDPOINTS.BLOGS.SUBMIT(id),
-      );
-
-    return {
-      success: true,
-      ...unwrapApiResponse(response),
-    };
-  } catch (error) {
-    console.error(
-      'submitBlog failed:',
-      error,
+    const response = await httpServer.post<
+      GenericApiResponse<BlogLikeData>
+    >(
+      API_ENDPOINTS.BLOGS.LIKE(blogId),
     );
 
     return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error: any) {
+    return { };
+  }
+}
+
+export async function unlikeBlog(blogId: string) {
+  try {
+    const response = await httpServer.delete<
+      GenericApiResponse<BlogLikeData>
+    >(
+      API_ENDPOINTS.BLOGS.UNLIKE(blogId),
+    );
+
+    return {
+      success: response.data.success,
+      data: response.data.data,
+    };
+  } catch (error: any) {
+    return {
       success: false,
-      error: 'Failed to submit blog',
+      error:
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to unlike blog",
     };
   }
 }
+// export async function submitBlog(
+//   id: string,
+// ) {
+//   try {
+//     const response =
+//       await httpServer.post<
+//         GenericApiResponse<Blog>
+//       >(
+//         API_ENDPOINTS.BLOGS.SUBMIT(id),
+//       );
+
+//     return {
+//       success: true,
+//       ...unwrapApiResponse(response),
+//     };
+//   } catch (error) {
+//     console.error(
+//       'submitBlog failed:',
+//       error,
+//     );
+
+//     return {
+//       success: false,
+//       error: 'Failed to submit blog',
+//     };
+//   }
+// }

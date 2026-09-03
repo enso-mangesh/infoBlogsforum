@@ -11,24 +11,33 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ROUTES } from "@/core/config/routes";
 import { blogFormSchema, BlogFormSchema } from "../blog.schema";
-import { getImageFileError, readFileAsDataUrl } from "../utils/blog.utils";
+import {
+  getImageFileError,
+  readFileAsDataUrl,
+} from "../utils/blog.utils";
 import { BlogEditor } from "./BlogEditor";
 import { ThumbnailCropperDialog } from "./ThumbnailCropperDialog";
-import { Blog } from "../blog.type";
+import { Blog, BlogStatus } from "../blog.type";
 import { SuccessDialog } from "@/components/common/SuccessDailog";
-import { createBlog, updateBlog, submitBlog } from "../services/blog-action";
+import {
+  createBlog,
+  updateBlog,
+  // submitBlog,
+} from "../services/blog-action";
 
 interface CreateBlogFormProps {
   blog?: Blog;
 }
+
 const hasFormData = (values: BlogFormSchema) => {
   return Boolean(
     values.title?.trim() ||
-    values.content?.trim() ||
-    values.keywords?.trim() ||
-    values.thumbnail,
+      values.content?.trim() ||
+      values.keywords?.trim() ||
+      values.thumbnail,
   );
 };
+
 const generateSlug = (title: string) => {
   return title
     .toLowerCase()
@@ -42,10 +51,23 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
   const router = useRouter();
 
   const existingBlog = blog;
-  const [showSubmittedDialog, setShowSubmittedDialog] = useState(false);
-  const [thumbnailError, setThumbnailError] = useState<string | null>(null);
-  const [cropperImage, setCropperImage] = useState<string | null>(null);
-  const pendingThumbnailChange = useRef<((value: string) => void) | null>(null);
+
+  const [showSubmittedDialog, setShowSubmittedDialog] =
+    useState(false);
+
+  const [thumbnailError, setThumbnailError] =
+    useState<string | null>(null);
+
+  const [cropperImage, setCropperImage] =
+    useState<string | null>(null);
+
+  const pendingThumbnailChange = useRef<
+    ((value: string | null) => void) | null
+  >(null);
+
+  const submittedRef = useRef(false);
+
+  const blogId = existingBlog?.id;
 
   const {
     register,
@@ -55,18 +77,20 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
     formState: { errors },
   } = useForm<BlogFormSchema>({
     resolver: zodResolver(blogFormSchema),
-    defaultValues: {
-      title: existingBlog?.title ?? "",
-      // category: existingBlog?.category ?? '',
-      // readTime: existingBlog?.readTime ?? '',
-      keywords: existingBlog?.keywords ? existingBlog.keywords.join(", ") : "",
-      content:
-        typeof existingBlog?.content === "string"
-          ? existingBlog.content
-          : (existingBlog?.content?.summary ?? ""),
-      thumbnail: existingBlog?.thumbnail ?? existingBlog?.image ?? null,
-      confirmOriginal: false,
-    },
+
+   defaultValues: {
+  title: existingBlog?.title ?? "",
+
+  keywords: existingBlog?.keywords
+    ? existingBlog.keywords.join(", ")
+    : "",
+
+  content: existingBlog?.content ?? "",
+
+  thumbnail: existingBlog?.thumbnailUrl ?? null,
+
+  confirmOriginal: false,
+},
   });
 
   const handleThumbnailSelected = async (
@@ -74,18 +98,24 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
     onChange: (value: string | null) => void,
   ) => {
     const file = event.target.files?.[0];
+
     event.target.value = "";
+
     if (!file) return;
 
     const fileError = getImageFileError(file);
+
     if (fileError) {
       setThumbnailError(fileError);
       return;
     }
 
     setThumbnailError(null);
+
     const dataUrl = await readFileAsDataUrl(file);
+
     pendingThumbnailChange.current = onChange;
+
     setCropperImage(dataUrl);
   };
 
@@ -96,14 +126,21 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
 
   const handleCropped = (dataUrl: string) => {
     pendingThumbnailChange.current?.(dataUrl);
+
     setCropperImage(null);
+
     pendingThumbnailChange.current = null;
   };
 
-  const submittedRef = useRef(false);
-
-  const blogId = existingBlog?.id;
-
+/*
+ * SUBMIT FOR APPROVAL
+ *
+ * Existing blog:
+ *   Update the blog with PENDING_REVIEW status.
+ *
+ * New blog:
+ *   Create the blog directly with PENDING_REVIEW status.
+ */
  const onSubmit = async (values: BlogFormSchema) => {
   submittedRef.current = true;
 
@@ -116,50 +153,63 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
     let result;
 
     if (blogId) {
+      // Existing blog → change status to PENDING_REVIEW
       result = await updateBlog(String(blogId), {
         title: values.title,
         content: values.content,
         thumbnail: values.thumbnail ?? undefined,
+        status: BlogStatus.PENDING_REVIEW,
       });
 
       if (!result.success) {
-        console.error("Failed to update blog:", result.error);
-        return;
-      }
-
-      const submitResult = await submitBlog(String(blogId));
-
-      if (!submitResult.success) {
         console.error(
-          "Failed to submit blog:",
-          submitResult.error,
+          "Failed to submit blog for approval:",
+          result.error,
         );
         return;
       }
     } else {
+      // New blog → create directly as PENDING_REVIEW
       result = await createBlog({
         title: values.title,
         slug,
         content: values.content,
-        status: "DRAFT",
+        status: BlogStatus.PENDING_REVIEW,
+        thumbnail: values.thumbnail ?? undefined,
       });
 
       if (!result.success) {
         console.error(
-          "Failed to create blog:",
+          "Failed to submit blog for approval:",
           result.error,
         );
         return;
       }
 
-      console.log("Blog created:", result);
+      console.log(
+        "Blog submitted for approval:",
+        result,
+      );
     }
 
     setShowSubmittedDialog(true);
   } catch (error) {
-    console.error("Blog submission failed:", error);
+    console.error(
+      "Blog submission failed:",
+      error,
+    );
   }
 };
+
+  /*
+   * SAVE AS DRAFT
+   *
+   * Existing blog:
+   *   updateBlog() with status DRAFT
+   *
+   * New blog:
+   *   createBlog() with status DRAFT
+   */
   const handleSaveDraft = async () => {
     const values = getValues();
 
@@ -176,25 +226,42 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
       let result;
 
       if (blogId) {
-        // Existing blog
+        // ------------------------------------
+        // EXISTING BLOG
+        // ------------------------------------
+
         result = await updateBlog(String(blogId), {
           title: values.title,
           content: values.content,
           thumbnail: values.thumbnail ?? undefined,
+
+          // IMPORTANT:
+          // Explicitly keep the blog as DRAFT
+          status: BlogStatus.DRAFT,
         });
       } else {
-        // New blog
+        // ------------------------------------
+        // NEW BLOG
+        // ------------------------------------
+
         result = await createBlog({
           title: values.title,
           slug,
           content: values.content,
-          status: "DRAFT",
+
+          // IMPORTANT:
+          // New blog is created as DRAFT
+          status: BlogStatus.DRAFT,
+
           thumbnail: values.thumbnail ?? undefined,
         });
       }
 
       if (!result.success) {
-        console.error("Failed to save draft:", result.error);
+        console.error(
+          "Failed to save draft:",
+          result.error,
+        );
         return;
       }
 
@@ -202,13 +269,19 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
 
       router.push(ROUTES.MY_BLOGS);
     } catch (error) {
-      console.error("Save draft failed:", error);
+      console.error(
+        "Save draft failed:",
+        error,
+      );
     }
   };
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto space-y-5">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="mx-auto space-y-5"
+      >
         <Input
           placeholder="e.g. Managing Thyroid Disorders"
           error={errors.title?.message}
@@ -233,51 +306,67 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
                     alt="Blog thumbnail"
                     className="h-full w-full object-cover"
                   />
+
                   <button
                     type="button"
                     aria-label="Remove thumbnail"
-                    onClick={() => field.onChange(null)}
-                    className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white hover:bg-black/80 transition-colors"
+                    onClick={() =>
+                      field.onChange(null)
+                    }
+                    className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
                   >
                     <X size={14} />
                   </button>
                 </div>
               ) : (
-                <label className="flex h-48 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-muted-foreground hover:bg-muted/40 transition-colors">
+                <label className="flex h-48 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border text-muted-foreground transition-colors hover:bg-muted/40">
                   <ImagePlus size={20} />
+
                   <span className="text-sm text-gray-500">
                     Add blog thumbnail
                   </span>
+
                   <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif"
                     className="hidden"
                     onChange={(event) =>
-                      handleThumbnailSelected(event, field.onChange)
+                      handleThumbnailSelected(
+                        event,
+                        field.onChange,
+                      )
                     }
                   />
                 </label>
               )
             }
           />
+
           {thumbnailError && (
-            <p className="text-sm text-destructive">{thumbnailError}</p>
+            <p className="text-sm text-destructive">
+              {thumbnailError}
+            </p>
           )}
         </div>
 
-        <div className="space-y-2 w-full">
+        <div className="w-full space-y-2">
           <Controller
             name="content"
             control={control}
             render={({ field }) => (
               <BlogEditor
                 value={field.value}
-                onChange={(content) => field.onChange(content.html)}
+                onChange={(content) =>
+                  field.onChange(content.html)
+                }
               />
             )}
           />
+
           {errors.content && (
-            <p className="text-sm text-destructive">{errors.content.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.content.message}
+            </p>
           )}
         </div>
 
@@ -291,17 +380,21 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
                   id="confirmOriginal"
                   checked={field.value}
                   onCheckedChange={(checked) =>
-                    field.onChange(checked === true)
+                    field.onChange(
+                      checked === true,
+                    )
                   }
                 />
               )}
             />
+
             <label
               htmlFor="confirmOriginal"
               className="text-sm font-normal text-muted-foreground"
             >
-              I confirm this content is original and not copied from another
-              source. I agree to the{" "}
+              I confirm this content is original and
+              not copied from another source. I agree
+              to the{" "}
               <Link
                 href="/terms-and-conditions"
                 className="underline text-foreground"
@@ -311,6 +404,7 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
               .
             </label>
           </div>
+
           {errors.confirmOriginal && (
             <p className="text-sm text-destructive">
               {errors.confirmOriginal.message}
@@ -328,7 +422,11 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
             Save as draft
           </Button>
 
-          <Button variant="primary" size="sm" type="submit">
+          <Button
+            variant="primary"
+            size="sm"
+            type="submit"
+          >
             Submit for approval
           </Button>
         </div>
@@ -353,3 +451,4 @@ export function CreateBlogForm({ blog }: CreateBlogFormProps) {
     </>
   );
 }
+
